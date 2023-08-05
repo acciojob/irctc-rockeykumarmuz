@@ -78,7 +78,7 @@ public class TrainService {
             book += ticket.getPassengersList().size();
         }
 
-        int count = train.getNoOfSeats() - book;
+        Integer count = train.getNoOfSeats() - book;
 
         for(Ticket tkt: ticketList) {
             String fromStation = tkt.getFromStation().toString();
@@ -105,6 +105,7 @@ public class TrainService {
 
         Train train = trainRepository.findById(trainId).get();
         // split and match any route if matches then calculate person else throw exception
+
         String arr[] = train.getRoute().split(",");
         boolean flag = false;
 
@@ -120,7 +121,7 @@ public class TrainService {
         }
 
         List<Ticket> ticketList = train.getBookedTickets();
-        int count = 0;
+        Integer count = 0;
         for(Ticket ticket: ticketList) {
             if (ticket.getFromStation().toString().equals(station.toString())) {
                 List<Passenger> passengerList = ticket.getPassengersList();
