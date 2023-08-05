@@ -84,7 +84,7 @@ public class TrainService {
             String fromStation = tkt.getFromStation().toString();
             String toStation = tkt.getToStation().toString();
 
-            if(map.get(seatAvailabilityEntryDto.getToStation().toString())>= map.get(toStation)) {
+            if(map.get(seatAvailabilityEntryDto.getToStation().toString()) <= map.get(toStation)) {
                 count++;
             }
             else if(map.get(seatAvailabilityEntryDto.getFromStation().toString())>=map.get(toStation)) {
@@ -122,9 +122,11 @@ public class TrainService {
         List<Ticket> ticketList = train.getBookedTickets();
         int count = 0;
         for(Ticket ticket: ticketList) {
-            List<Passenger> passengerList = ticket.getPassengersList();
+            if (ticket.getFromStation().toString().equals(station.toString())) {
+                List<Passenger> passengerList = ticket.getPassengersList();
 
-            count += passengerList.size();
+                count += passengerList.size();
+            }
         }
 
         return count;
