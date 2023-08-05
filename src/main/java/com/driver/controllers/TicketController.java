@@ -17,7 +17,7 @@ public class TicketController {
     TicketService ticketService;
 
     @PostMapping("/book")
-    public Integer bookTicket(@RequestBody BookTicketEntryDto bookTicketEntryDto){
+    public Integer bookTicket(@RequestBody BookTicketEntryDto bookTicketEntryDto) {
 
         try {
             Integer ticketId = ticketService.bookTicket(bookTicketEntryDto);

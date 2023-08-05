@@ -9,10 +9,12 @@ import com.driver.repository.PassengerRepository;
 import com.driver.repository.TicketRepository;
 import com.driver.repository.TrainRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TicketService {
@@ -42,7 +44,68 @@ public class TicketService {
         //Also in the passenger Entity change the attribute bookedTickets by using the attribute bookingPersonId.
        //And the end return the ticketId that has come from db
 
-       return null;
+
+        // getting train form train id
+        Train train=trainRepository.findById(bookTicketEntryDto.getTrainId()).get();
+        int bookedSeats=0;
+        List<Ticket> bookedList= train.getBookedTickets();
+        for (Ticket ticket1:bookedList){
+            bookedSeats +=ticket1.getPassengersList().size();
+        }
+        if (bookedSeats+bookTicketEntryDto.getNoOfSeats() > train.getNoOfSeats()){
+            throw new Exception("Less tickets are available");
+        }
+
+
+        // setting passengers
+        List<Passenger> passengerList= new ArrayList<>();
+        List<Integer> ids= bookTicketEntryDto.getPassengerIds();
+        for(int id: ids){
+            passengerList.add(passengerRepository.findById(id).get());
+        }
+        // to find from and to station
+        String stations[]= train.getRoute().split(",");
+        int from=-1;
+        int to=-1;
+
+        for(int i=0;i<stations.length;i++){
+            if(bookTicketEntryDto.getFromStation().toString().equals(stations[i])){
+                from = i;
+                break;
+            }
+        }
+        for(int i=0;i<stations.length;i++){
+            if(bookTicketEntryDto.getToStation().toString().equals(stations[i])){
+                to = i;
+                break;
+            }
+        }
+        if(from==-1 || to==-1 || to-from<0){
+            throw new Exception("Invalid stations");
+        }
+
+        Ticket ticket= new Ticket();
+        ticket.setPassengersList(passengerList);
+        ticket.setFromStation(bookTicketEntryDto.getFromStation());
+        ticket.setToStation(bookTicketEntryDto.getToStation());
+
+        int fair=0;
+        fair=bookTicketEntryDto.getNoOfSeats()*(to-from)*300;
+
+        ticket.setTotalFare(fair);
+        ticket.setTrain(train);
+
+        //Save the bookedTickets in the train Object
+        train.getBookedTickets().add(ticket);
+        train.setNoOfSeats(train.getNoOfSeats()- bookTicketEntryDto.getNoOfSeats());
+
+        //Also in the passenger Entity change the attribute bookedTickets by using the attribute bookingPersonId.
+        Passenger passenger= passengerRepository.findById(bookTicketEntryDto.getBookingPersonId()).get();
+        passenger.getBookedTickets().add(ticket);
+
+        trainRepository.save(train);
+        Ticket ticket1= ticketRepository.save(ticket);
+        return ticket1.getTicketId();
 
     }
 }
